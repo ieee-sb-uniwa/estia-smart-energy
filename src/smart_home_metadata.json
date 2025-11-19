@@ -1,0 +1,90 @@
+{
+    "Home ID": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical",
+        "range_diff": 499,
+        "min": 1,
+        "max": 500,
+        "mean": 250.375,
+        "median": 250.0,
+        "std": 144.435
+    },
+    "Appliance Type": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "categorical",
+        "unique_count": 10,
+        "unique_categories": [
+            "Fridge",
+            "Oven",
+            "Dishwasher",
+            "Heater",
+            "Microwave",
+            "Air Conditioning",
+            "Computer",
+            "TV",
+            "Washing Machine",
+            "Lights"
+        ],
+        "most_frequent_class": "Lights",
+        "least_frequent_class": "TV"
+    },
+    "Energy Consumption (kWh)": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical",
+        "range_diff": 4.9,
+        "min": 0.1,
+        "max": 5.0,
+        "mean": 1.5,
+        "median": 1.23,
+        "std": 1.181
+    },
+    "Time": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical"
+    },
+    "Date": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical"
+    },
+    "Outdoor Temperature (\u00b0C)": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical",
+        "range_diff": 50.0,
+        "min": -10.0,
+        "max": 40.0,
+        "mean": 14.95,
+        "median": 14.9,
+        "std": 14.439
+    },
+    "Season": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "categorical",
+        "unique_count": 4,
+        "unique_categories": [
+            "Fall",
+            "Summer",
+            "Winter",
+            "Spring"
+        ],
+        "most_frequent_class": "Spring",
+        "least_frequent_class": "Winter"
+    },
+    "Household Size": {
+        "null_count": 0,
+        "null_percentage": 0.0,
+        "data_type": "numerical",
+        "range_diff": 4,
+        "min": 1,
+        "max": 5,
+        "mean": 3.002,
+        "median": 3.0,
+        "std": 1.417
+    }
+}
