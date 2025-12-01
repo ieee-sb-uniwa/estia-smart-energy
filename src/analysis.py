@@ -1,3 +1,5 @@
+import pathlib
+
 import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -14,11 +16,6 @@ warnings.filterwarnings("ignore")
 
 
 
-# relative path
-data_path = Path(__file__).parent.parent / "data" / "raw" / "smart_home_energy_consumption_large.csv"
-
-raw_df: pd.DataFrame = pd.read_csv(data_path)
-df_columns = raw_df.columns
 
 
 def plot_frequency_histogram(df: pd.DataFrame, column: str, show=True, save=False, save_path: str | Path = '') -> None:
@@ -44,7 +41,6 @@ def plot_frequency_histogram(df: pd.DataFrame, column: str, show=True, save=Fals
     if column.lower() == 'time':
         time_series = pd.to_datetime(data, errors='coerce')
         hours = time_series.dt.hour
-        print(hours)
 
         plt.hist(hours, bins=range(25), edgecolor='black', align='left')
         plt.title("Distribution of Observations by Hour of Day")
@@ -212,15 +208,23 @@ def save_metadata_json(df, json_file_path) -> None:
         json.dump(_make_serializable(metadata_json), f, indent=4)
 
 
-def plot_energy_relationships(df, target='Energy Consumption (kWh)', save=False, save_folder=''):
+def plot_energy_relationships(df, target='', save=False, save_folder:str | Path ='', plot_weeks=False,plot_months=False,plot_hours=False, title=''):
 
     """
 
+    :param title: graph title
+    :param plot_hours: if column == YY MM DD HH MM SS format, bin hours only
+    :param plot_months: --- bin months only
+    :param plot_weeks:  --- bin weeks only
+    :param save_folder: save folder
     :param df: full arbitrary dataframe.
     :param target: feature to be compared.
     :param save: save
     :param save_path: path to be saved.
-    :return:
+    :return: Plots average of target feature versus all other columns in a dataframe. If other feature column is:
+    numerical: it creates bins
+    categorical: plots each category vs avg target
+    datetime: creates bins vs avg target. Some hardcoded stuff are here bc datetime objects are sht.
     """
 
     # num vs cat features
@@ -234,25 +238,41 @@ def plot_energy_relationships(df, target='Energy Consumption (kWh)', save=False,
 
     for col in categorical_features:
         N = 20 # number of x labels for timedates
-        print(col)
-        if col == 'Time':
-            # convert to datetime
-            df['Time_hour'] = pd.to_datetime(df['Time'], format='%H:%M').dt.hour
+        if col == 'Time'  or col=='Datetime': ############## HARD CODED FOR 2 DATASETS HERE MUST FIX LATER
 
-            bins = list(range(0, 25))  # [0, 1, 2, ..., 24]
-            labels = [str(i) for i in range(24)]  # ['0', '1', '2', ..., '23']
-            df['Time_bin'] = pd.cut(df['Time_hour'], bins=bins, labels=labels, right=False)
+            if plot_hours:
+                df['Time_hour'] = pd.to_datetime(df['Datetime'], format='%Y-%m-%d %H:%M:%S').dt.hour
+                bins = list(range(0, 25))
+                labels = [str(i) for i in range(24)]
+                df['Time_bin'] = pd.cut(df['Time_hour'], bins=bins, labels=labels, right=False)
+                avg_energy = df.groupby('Time_bin')[target].mean().sort_index()
 
-            avg_energy = df.groupby('Time_bin')[target].mean().sort_index()
+            elif plot_weeks:
+                df['Weekday'] = pd.to_datetime(df['Datetime'], format='%Y-%m-%d %H:%M:%S').dt.dayofweek
+                bins = list(range(0, 8))
+                labels = [str(i) for i in range(7)]
+                df['Week_bin'] = pd.cut(df['Weekday'], bins=bins, labels=labels, right=False)
+                avg_energy = df.groupby('Week_bin')[target].mean().sort_index()
+
+            elif plot_months:
+                df['Month'] = pd.to_datetime(df['Datetime'], format='%Y-%m-%d %H:%M:%S').dt.month
+                bins = list(range(1, 14))
+                labels = [str(i) for i in range(1, 13)]
+                df['Month_bin'] = pd.cut(df['Month'], bins=bins, labels=labels, right=False)
+                avg_energy = df.groupby('Month_bin')[target].mean().sort_index()
+
+            else:
+                raise ValueError("No plot flag set: set plot_hours, plot_weeks, or plot_months")
 
         else:
             avg_energy = df.groupby(col)[target].mean()
+
         plt.figure(figsize=(8, 5))
 
         sns.barplot(x=avg_energy.index, y=avg_energy.values, palette='viridis')
         plt.title(f"Average {target} by {col}")
         plt.ylabel(f"Average {target}")
-        plt.xlabel(col)
+        plt.xlabel(title)
 
         all_ticks = range(len(avg_energy.index))
         tick_positions = all_ticks[::max(1, len(all_ticks) // N)]
@@ -292,5 +312,10 @@ def plot_energy_relationships(df, target='Energy Consumption (kWh)', save=False,
             plt.savefig(save_path)
         plt.show()
 
+# relative path
+data_path = Path(__file__).parent.parent / "data" / "raw" / 'hourly-energy-consumption' / "AEP_hourly.csv"
+resources_path = Path(__file__).parent.parent / "resources"
+raw_df: pd.DataFrame = pd.read_csv(data_path)
+df_columns = raw_df.columns
 
-plot_energy_relationships(raw_df, save=True, save_folder='resources')
+plot_energy_relationships(raw_df, save=True, target='AEP_MW', plot_weeks=True, save_folder= resources_path)
